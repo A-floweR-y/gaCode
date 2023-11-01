@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="showGaCode" style="display: none;"></h1>
+    <div id="addGaCode" style="display: none;">
+        <p id="secret"></p>
+        <img id="qrcode" src="" alt="二维码code" width="100" height="100">
+        <input id="usernameInput" type="text" placeholder="username">
+        <input id="gaCodeInput" type="text" placeholder="gaCode">
+        <button id="addGaCodeBtn">绑定</button>
+    </div>
+</body>
+</html>
+<script>
+    // const username = 'Y.yang';
+    // const username = 'Shirley.bai';
+    const username = 'Zaizai.bai';
+
+    const getGaCode = async () => {
+        const { gaCode, secret, qrcodeUrl } = await fetch(`http://localhost:3000/gaCode/${username}`).then((response) => response.json());
+        if (gaCode) {
+            const dom = document.querySelector('#showGaCode');
+            dom.innerText = `
+                我是 ${username}
+                GaCode是：${gaCode}
+            `;
+            dom.style.display = 'block';
+            document.querySelector('#addGaCode').style.display = 'none';
+        } else {
+            document.querySelector('#addGaCode').style.display = 'block';
+            document.querySelector('#showGaCode').style.display = 'node';
+            document.querySelector('#qrcode').src = qrcodeUrl;
+            document.querySelector('#secret').innerText = `秘钥内容：${secret}`;
+        }
+    }
+    getGaCode();
+
+    const addGaCode = () => {
+        document.querySelector('#addGaCodeBtn').onclick = async () => {
+            const username = document.querySelector('#usernameInput').value;
+            const gaCode = document.querySelector('#gaCodeInput').value;
+            const { ok, msg } = await fetch('http://localhost:3000/gaCode', {
+                method: 'POST',
+                body: JSON.stringify({
+                    username,
+                    gaCode
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }).then((response) => response.json());
+            if (ok) {
+                alert('绑定成功');
+            } else {
+                alert(msg);
+            }
+        }
+    }
+    addGaCode();
+</script>
